@@ -1,41 +1,41 @@
-import React, { useState } from "react";
-import Select from "react-select";
-import CreatableSelect from "react-select/creatable";
-import { ProjectData } from "@/types/projectData";
+"use client"
+import React, { useState } from 'react';
+import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
+import { ProjectData } from '@/types/projectData';
 
 const predefinedRoles = [
-  { value: "backend-developer", label: "Back-end developer" },
-  { value: "frontend-developer", label: "Front-end developer" },
-  { value: "fullstack-developer", label: "Full stack developer" },
-  { value: "uiux-designer", label: "UI/UX designer" },
-  { value: "devops-engineer", label: "DevOps engineer" },
-  { value: "graphic-designer", label: "Graphic designer" },
-  { value: "mobile-app-developer", label: "Mobile app developer" },
-  { value: "desktop-app-developer", label: "Desktop app developer" },
-  { value: "data-scientist", label: "Data scientist" },
-  { value: "audio-producer", label: "Audio producer" },
-  { value: "composer", label: "Composer" },
-  { value: "3d-artist", label: "3D artist" },
-  { value: "animator", label: "Animator" },
-  { value: "marketing-specialist", label: "Marketing specialist" },
-  { value: "photographer", label: "Photographer" },
-  { value: "video-producer", label: "Video producer" },
-  // Add more roles as needed
+  { value: 'backend-developer', label: 'Back-end developer' },
+  { value: 'frontend-developer', label: 'Front-end developer' },
+  { value: 'fullstack-developer', label: 'Full stack developer' },
+  { value: 'uiux-designer', label: 'UI/UX designer' },
+  { value: 'devops-engineer', label: 'DevOps engineer' },
+  { value: 'graphic-designer', label: 'Graphic designer' },
+  { value: 'mobile-app-developer', label: 'Mobile app developer' },
+  { value: 'desktop-app-developer', label: 'Desktop app developer' },
+  { value: 'data-scientist', label: 'Data scientist' },
+  { value: 'audio-producer', label: 'Audio producer' },
+  { value: 'composer', label: 'Composer' },
+  { value: '3d-artist', label: '3D artist' },
+  { value: 'animator', label: 'Animator' },
+  { value: 'marketing-specialist', label: 'Marketing specialist' },
+  { value: 'photographer', label: 'Photographer' },
+  { value: 'video-producer', label: 'Video producer' },
 ];
 
 interface CreateProjectFormProps {
-  onSubmit: (projectData: ProjectData) => void;
+  onProjectCreated: (project: ProjectData) => void;
 }
 
-const CreateProjectForm: React.FC<CreateProjectFormProps> = ({ onSubmit }) => {
+const CreateProjectForm: React.FC<CreateProjectFormProps> = ({ onProjectCreated }) => {
   const [projectData, setProjectData] = useState<{
     name: string;
     description: string;
     roles: string[];
     tags: string[];
   }>({
-    name: "",
-    description: "",
+    name: '',
+    description: '',
     roles: [],
     tags: [],
   });
@@ -66,9 +66,37 @@ const CreateProjectForm: React.FC<CreateProjectFormProps> = ({ onSubmit }) => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onSubmit(projectData);
+
+    try {
+      const token = localStorage.getItem('token'); // Retrieve the token from local storage or other storage
+      console.log("this is the tocken",token)
+      if (!token) {
+        console.error('No token found');
+        return;
+    }
+      const response = await fetch('http://localhost:8000/auth/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Include authorization headers
+        },
+        body: JSON.stringify(projectData),
+      });
+
+      const result = await response.json();
+      console.log('printing ', result);
+
+      if (response.ok) {
+        console.log('Project created successfully:', result);
+        onProjectCreated(result); // Call the prop function to handle project creation
+      } else {
+        console.error('Error creating project:', result);
+      }
+    } catch (error) {
+      console.log('This is the error:', error);
+    }
   };
 
   return (

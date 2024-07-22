@@ -2,14 +2,52 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import React, { useState } from 'react';
 
 const Signin = () => {
   const [data, setData] = useState({
     email: "",
     password: "",
   });
+  const [error, setError] = useState(""); // To display error messages
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch('http://localhost:8000/signin', { // Adjust the API endpoint if needed
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.message || "An error occurred. Please try again.");
+        return;
+      }
+
+      
+      if (response.ok) {
+        console.log('Login successful:', result);
+        localStorage.setItem('token', result.token); 
+        console.log("this is result.token:",result.token);
+        console.log("this is local storage token",localStorage.token);
+        
+    } else {
+        console.error('Login error:', result);
+    }
+
+      // Handle successful sign-in, e.g., redirect to another page
+      window.location.href = '/project'; // Example redirect
+
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+    }
+  };
   return (
     <>
       {/* <!-- ===== SignIn Form Start ===== --> */}
@@ -52,6 +90,8 @@ const Signin = () => {
             <h2 className="mb-15 text-center text-3xl font-semibold text-black dark:text-white xl:text-sectiontitle2">
               Login to Your Account
             </h2>
+            {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
             <div className="flex flex-col">
               <div className="flex items-center gap-8">
                 <button
@@ -121,7 +161,7 @@ const Signin = () => {
               <span className="dark:bg-stroke-dark hidden h-[1px] w-full max-w-[200px] bg-stroke dark:bg-strokedark sm:block"></span>
             </div>
 
-            <form>
+            <form onSubmit={handleSubmit}>
               <div className="mb-7.5 flex flex-col gap-7.5 lg:mb-12.5 lg:flex-row lg:justify-between lg:gap-14">
                 <input
                   type="text"

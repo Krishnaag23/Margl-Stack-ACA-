@@ -28,6 +28,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+#database
+*.db
+
 # local env files
 .env*.local
 .env
