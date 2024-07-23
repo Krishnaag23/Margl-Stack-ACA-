@@ -1,7 +1,7 @@
 // src/types.ts
 export interface ProjectData {
-  name: string;
-  description: string;
-  roles: string[];
-  tags: string[];
+  Name: string;
+  Description: string;
+  Roles: string[];
+  Tags: string[];
 }

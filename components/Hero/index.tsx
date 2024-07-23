@@ -1,13 +1,16 @@
 "use client"
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const Hero = () => {
   const [email, setEmail] = useState("");
+  const router = useRouter(); // Use Next.js's router for programmatic navigation
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add your form submission logic here
+    // Redirect to the signup page with the email query parameter
+    router.push(`auth/signup?email=${encodeURIComponent(email)}`);
   };
 
   return (

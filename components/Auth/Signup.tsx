@@ -2,24 +2,34 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState,useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Questrial } from "next/font/google";
 
 const Signup = () => {
   const [data, setData] = useState({
-    firstName: "",
-    lastName: "",
+    userName:"",
     email: "",
     password: "",
   });
-
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const router = useRouter();
 
+  useEffect(() => {
+    const queryEmail = new URLSearchParams(window.location.search).get('email');
+    
+    if (queryEmail) {
+      setData((prevData) => ({ ...prevData, email: queryEmail }));
+    }
+    
+  }, [data]);
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
-
+  
     try {
       const response = await fetch("http://localhost:8000/signup", {
         method: "POST",
@@ -28,23 +38,28 @@ const Signup = () => {
         },
         body: JSON.stringify(data),
       });
-
+  
+      const result = await response.json();
+  
       if (response.ok) {
-        const result = await response.json();
-        setSuccess("Account created successfully!");
+        setSuccess(result.message || "Account created successfully!");
       } else {
-        const result = await response.json();
         setError(result.message || "Something went wrong!");
       }
     } catch (error) {
-      setError("Network error! Please try again later.");
+      console.log("This is the error:", error);
+      setError(error.message || "Network error! Please try again later.");
     }
   };
+  
+  
+  
 
   return (
     <>
       {/* <!-- ===== SignUp Form Start ===== --> */}
       <section className="pb-12.5 pt-32.5 lg:pb-25 lg:pt-45 xl:pb-30 xl:pt-50">
+        
         <div className="relative z-1 mx-auto max-w-c-1016 px-7.5 pb-7.5 pt-10 lg:px-15 lg:pt-15 xl:px-20 xl:pt-20">
           <div className="absolute left-0 top-0 -z-1 h-2/3 w-full rounded-lg bg-gradient-to-t from-transparent to-[#dee7ff47] dark:bg-gradient-to-t dark:to-[#252A42]"></div>
           <div className="absolute bottom-17.5 left-0 -z-1 h-1/3 w-full">
@@ -160,42 +175,22 @@ const Signup = () => {
                       htmlFor="firstName"
                       className="text-dark mb-3 block text-sm font-medium dark:text-white"
                     >
-                      First Name
+                      User Name
                     </label>
                     <input
                       type="text"
                       name="firstName"
                       id="firstName"
-                      value={data.firstName}
+                      value={data.userName}
                       onChange={(e) =>
-                        setData({ ...data, firstName: e.target.value })
+                        setData({ ...data, userName: e.target.value })
                       }
-                      placeholder="John"
+                      placeholder="JohnDoe"
                       className="text-body-color dark:border-form-strokedark dark:bg-form-input w-full rounded-lg border border-stroke bg-white px-6 py-3 text-base font-medium outline-none transition-all duration-300 focus:border-primary focus:shadow-primary dark:focus:border-primary"
                     />
                   </div>
                 </div>
-                <div className="w-full px-4 md:w-1/2">
-                  <div className="mb-8">
-                    <label
-                      htmlFor="lastName"
-                      className="text-dark mb-3 block text-sm font-medium dark:text-white"
-                    >
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      id="lastName"
-                      value={data.lastName}
-                      onChange={(e) =>
-                        setData({ ...data, lastName: e.target.value })
-                      }
-                      placeholder="Doe"
-                      className="text-body-color dark:border-form-strokedark dark:bg-form-input w-full rounded-lg border border-stroke bg-white px-6 py-3 text-base font-medium outline-none transition-all duration-300 focus:border-primary focus:shadow-primary dark:focus:border-primary"
-                    />
-                  </div>
-                </div>
+                
               </div>
               <div className="mb-8">
                 <label
