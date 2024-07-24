@@ -10,7 +10,10 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
+	
 )
+
+
 
 var jwtKey = []byte("my_secret_key")
 
@@ -24,6 +27,8 @@ type Claims struct {
 	Username string `json:"username"`
 	jwt.StandardClaims
 }
+
+
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	var creds Credentials
