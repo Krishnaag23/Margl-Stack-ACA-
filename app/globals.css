@@ -38,7 +38,6 @@
   --hexagon-bg-red: #dc3545;
 }
 
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -165,4 +164,12 @@ pre {
 
 .active-tab {
   @apply bg-stroke text-black dark:bg-blackho dark:text-white;
+}
+
+.hackathon-card {
+  transition: transform 0.3s ease;
+}
+
+.hackathon-card:hover {
+  transform: scale(1.05);
 }

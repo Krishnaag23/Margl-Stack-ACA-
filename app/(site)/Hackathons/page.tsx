@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import HackathonCard from "@/components/Hackathon/HackathonCard";
 import CreateHackathonForm from "@/components/Hackathon/CreateHackathonForm";
@@ -8,27 +9,30 @@ import { HackathonData } from "@/types/hackathonData";
 const HackathonsPage: React.FC = () => {
   const [hackathons, setHackathons] = useState<HackathonData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const fetchHackathons = async () => {
     const token = localStorage.getItem("token");
-
     if (!token) {
       console.error("No token found");
+      setError("No token found");
       return;
     }
 
     try {
-      const response = await axios.get("http://localhost:8000/auth/hackathons", {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await axios.get(
+        "http://localhost:8000/auth/hackathons",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       console.log("Fetched hackathons:", response.data);
       setHackathons(response.data);
-    } catch (error) {
-      console.error("Failed to fetch hackathons", error);
+    } catch (err) {
+      console.error("Failed to fetch hackathons", err);
       setError("Failed to fetch hackathons");
     }
   };
@@ -41,65 +45,31 @@ const HackathonsPage: React.FC = () => {
     console.log("Updated hackathons state:", hackathons);
   }, [hackathons]);
 
-  const handleCreateHackathon = async (hackathonData: HackathonData) => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      console.error("No token found");
-      return;
-    }
-
+  const handleHackathonCreated = async (hackathonData: HackathonData) => {
     try {
-      const response = await axios.post(
-        "http://localhost:8000/auth/hackathons",
-        hackathonData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log("Created hackathon:", response.data);
-      setHackathons((prevHackathons) => [...prevHackathons, response.data]);
+      await fetchHackathons(); // Refetch hackathons after creation
       setIsModalOpen(false);
-    } catch (error) {
-      console.error("Failed to create hackathon", error);
-      setError("Failed to create hackathon");
+    } catch (err) {
+      setError((err as Error).message);
     }
   };
 
   const filteredHackathons = hackathons.filter((hackathon) => {
-    console.log("Filtering hackathon:", hackathon);
-    const title = hackathon.title?.toLowerCase() || '';
-    const hostName = hackathon.hostName?.toLowerCase() || '';
-    const themes = hackathon.themes || [];
+    const title = hackathon.title?.toLowerCase();
+    const hostName = hackathon.hostName?.toLowerCase();
+    const themes = Array.isArray(hackathon.themes) ? hackathon.themes : [];
 
-    const titleMatch = title.includes(searchQuery.toLowerCase());
-    const hostNameMatch = hostName.includes(searchQuery.toLowerCase());
-    const themesMatch = themes.some((theme) =>
-      theme.toLowerCase().includes(searchQuery.toLowerCase())
+    const titleMatch = title?.includes(searchQuery.toLowerCase());
+    const hostNameMatch = hostName?.includes(searchQuery.toLowerCase());
+    const themesMatch = themes?.some((theme) =>
+      theme.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-
-    console.log({
-      titleMatch,
-      hostNameMatch,
-      themesMatch,
-      searchQuery
-    });
 
     return titleMatch || hostNameMatch || themesMatch;
   });
 
-  console.log('Filtered hackathons:', filteredHackathons);
-
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   return (
     <>
@@ -129,24 +99,24 @@ const HackathonsPage: React.FC = () => {
             filteredHackathons.map((hackathon, index) => (
               <HackathonCard
                 key={index}
-                imageUrl={hackathon.imageUrl}
-                title={hackathon.title} // Adjust based on your data
-                daysLeft={hackathon.daysLeft}
+                imageUrl={hackathon.image_url}
+                title={hackathon.title}
+                daysLeft={hackathon.days_left}
                 online={hackathon.online}
-                prizeAmount={hackathon.prizeAmount}
+                prizeAmount={hackathon.prize_amount}
                 participants={hackathon.participants}
-                hostName={hackathon.hostName} // Adjust based on your data
-                hostLogoUrl={hackathon.hostLogoUrl} // Adjust based on your data
-                submissionPeriod={hackathon.submissionPeriod} // Adjust based on your data
-                managedBy={hackathon.managedBy} // Adjust based on your data
-                managedByLogoUrl={hackathon.managedByLogoUrl} // Adjust based on your data
-                themes={hackathon.themes || []} // Adjust based on your data
+                hostName={hackathon.host_name}
+                hostLogoUrl={hackathon.host_logo_url}
+                submissionPeriod={hackathon.submission_period}
+                managedBy={hackathon.managed_by}
+                managedByLogoUrl={hackathon.managed_by_logo_url}
+                themes={hackathon.themes}
               />
             ))
           )}
 
           {isModalOpen && (
-            <div className="fixed inset-0 z-10 w-screen overflow-y-auto my-15">
+            <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
               <div className="flex min-h-screen items-center justify-center px-4">
                 <div className="fixed inset-0 bg-black opacity-50"></div>
                 <div className="relative mx-auto w-4/5 rounded-lg bg-white p-6 dark:bg-gray-800">
@@ -157,7 +127,7 @@ const HackathonsPage: React.FC = () => {
                     Close
                   </button>
                   <CreateHackathonForm
-                    onSubmit={handleCreateHackathon}
+                    onHackathonCreated={handleHackathonCreated} // For handling new hackathon creation
                     onClose={closeModal}
                   />
                 </div>

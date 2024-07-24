@@ -62,29 +62,30 @@ func (p *Project) MarshalTags(tags []string) error {
 
 type Hackathon struct {
 	gorm.Model
-	ImageUrl         string
-	Title            string
-	DaysLeft         int
-	Online           bool
-	PrizeAmount      string
-	Participants     int
-	HostName         string
-	HostLogoUrl      string
-	SubmissionPeriod string
-	ManagedBy        string
-	ManagedByLogoUrl string
-	Themes           string `gorm:"type:text"` // Store JSON as string
+	ImageUrl         string `json:"image_url"`
+	Title            string `json:"title"`
+	DaysLeft         string `json:"days_left"`
+	Online           bool   `json:"online"`
+	PrizeAmount      string `json:"prize_amount"`
+	Participants     string `json:"participants"`
+	HostName         string `json:"host_name"`
+	HostLogoUrl      string `json:"host_logo_url"`
+	SubmissionPeriod string `json:"submission_period"`
+	ManagedBy        string `json:"managed_by"`
+	ManagedByLogoUrl string `json:"managed_by_logo_url"`
+	Themes           string `json:"themes" gorm:"type:text"` // Store JSON as string
 }
 
+// UnmarshalThemes parses the Themes JSON string into a slice of strings
 func (h *Hackathon) UnmarshalThemes() ([]string, error) {
 	var themes []string
-	err := json.Unmarshal([]byte(h.Themes), &themes)
-	if err != nil {
+	if err := json.Unmarshal([]byte(h.Themes), &themes); err != nil {
 		return nil, err
 	}
 	return themes, nil
 }
 
+// MarshalThemes converts a slice of strings into a JSON string for storage
 func (h *Hackathon) MarshalThemes(themes []string) error {
 	data, err := json.Marshal(themes)
 	if err != nil {

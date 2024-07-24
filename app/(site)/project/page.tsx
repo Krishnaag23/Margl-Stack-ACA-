@@ -62,7 +62,7 @@ const CreateProjectPage: React.FC = () => {
     const rolesMatch = JSON.parse(project.Roles)?.some((role: string) =>
       role.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-    const tagsMatch = JSON.parse(project.Tags)?.some((tag: string) =>
+    const tagsMatch = JSON.parse(project.Tags)?.some((tag: string) => 
       tag.toLowerCase().includes(searchQuery.toLowerCase()),
     );
 

@@ -1,15 +1,37 @@
 "use client";
 
 import { useState } from "react";
+import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
 import { HackathonData } from "@/types/hackathonData";
 
+const themesOptions = [
+  // Define theme options here if needed, similar to predefinedRoles in CreateProjectForm
+];
+
 interface CreateHackathonFormProps {
-  onSubmit: (hackathonData: HackathonData) => void;
+  onHackathonCreated: (hackathonData: HackathonData) => void;
   onClose: () => void;
 }
 
-const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onClose }) => {
-  const [formState, setFormState] = useState<HackathonData>({
+const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({
+  onHackathonCreated,
+  onClose,
+}) => {
+  const [hackathonData, setHackathonData] = useState<{
+    imageUrl: string;
+    title: string;
+    daysLeft: number;
+    online: boolean;
+    prizeAmount: string;
+    participants: number;
+    hostName: string;
+    hostLogoUrl: string;
+    submissionPeriod: string;
+    managedBy: string;
+    managedByLogoUrl: string;
+    themes: string[];
+  }>({
     imageUrl: "",
     title: "",
     daysLeft: 0,
@@ -24,17 +46,24 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
     themes: [],
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;
-  
-    setFormState((prevState) => ({
-      ...prevState,
-      [name]: type === "checkbox" ? checked :
-               (name === "participants" || name === "daysLeft") ? parseInt(value) || 0 : value,
+    setHackathonData((prevData) => ({
+      ...prevData,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
-  
-  const handleSubmit = async (e: React.FormEvent) => {
+
+  const handleThemesChange = (newValue: any) => {
+    setHackathonData((prevData) => ({
+      ...prevData,
+      themes: newValue ? newValue.map((theme: any) => theme.value) : [],
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -44,21 +73,37 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
         return;
       }
 
+      const payload = {
+        image_url: hackathonData.imageUrl,
+        title: hackathonData.title,
+        days_left: hackathonData.daysLeft.toString(),
+        online: hackathonData.online,
+        prize_amount: hackathonData.prizeAmount,
+        participants: hackathonData.participants.toString(),
+        host_name: hackathonData.hostName,
+        host_logo_url: hackathonData.hostLogoUrl,
+        submission_period: hackathonData.submissionPeriod,
+        managed_by: hackathonData.managedBy,
+        managed_by_logo_url: hackathonData.managedByLogoUrl,
+        themes: hackathonData.themes,
+      };
+
       const response = await fetch("http://localhost:8000/auth/hackathons", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formState),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
+      console.log("Response:", result);
 
       if (response.ok) {
         console.log("Hackathon created successfully:", result);
-        onSubmit(result);
         onClose();
+        onHackathonCreated(result);
       } else {
         console.error("Error creating hackathon:", result);
       }
@@ -76,7 +121,10 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
         <form onSubmit={handleSubmit} autoComplete="off">
           <div className="flex flex-col gap-6 border-b border-gray-200 p-6 dark:border-gray-700">
             <div className="flex flex-col">
-              <label className="pb-2 font-medium leading-[20px]" htmlFor="imageUrl">
+              <label
+                className="pb-2 font-medium leading-[20px]"
+                htmlFor="imageUrl"
+              >
                 Image URL
               </label>
               <input
@@ -85,12 +133,15 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
                 placeholder="Image URL"
                 id="imageUrl"
                 name="imageUrl"
-                value={formState.imageUrl}
+                value={hackathonData.imageUrl}
                 onChange={handleChange}
               />
             </div>
             <div className="flex flex-col">
-              <label className="pb-2 font-medium leading-[20px]" htmlFor="title">
+              <label
+                className="pb-2 font-medium leading-[20px]"
+                htmlFor="title"
+              >
                 Title
               </label>
               <input
@@ -99,12 +150,15 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
                 placeholder="Title"
                 id="title"
                 name="title"
-                value={formState.title}
+                value={hackathonData.title}
                 onChange={handleChange}
               />
             </div>
             <div className="flex flex-col">
-              <label className="pb-2 font-medium leading-[20px]" htmlFor="daysLeft">
+              <label
+                className="pb-2 font-medium leading-[20px]"
+                htmlFor="daysLeft"
+              >
                 Days Left
               </label>
               <input
@@ -113,12 +167,15 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
                 placeholder="Days Left"
                 id="daysLeft"
                 name="daysLeft"
-                value={formState.daysLeft || ""}
+                value={hackathonData.daysLeft}
                 onChange={handleChange}
               />
             </div>
             <div className="flex flex-col">
-              <label className="pb-2 font-medium leading-[20px]" htmlFor="online">
+              <label
+                className="pb-2 font-medium leading-[20px]"
+                htmlFor="online"
+              >
                 Online
               </label>
               <input
@@ -126,12 +183,15 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
                 className="box-border rounded-[4px] border border-[#DEE2E6] bg-[#F8F9FA] p-2 text-sm leading-[20px] outline-none transition-all focus:border-[#495057] focus:bg-white dark:border-gray-700 dark:bg-gray-900 dark:focus:border-gray-500 dark:focus:bg-gray-700"
                 id="online"
                 name="online"
-                checked={formState.online}
-                onChange={(e) => setFormState((prevState) => ({ ...prevState, online: e.target.checked }))}
+                checked={hackathonData.online}
+                onChange={handleChange}
               />
             </div>
             <div className="flex flex-col">
-              <label className="pb-2 font-medium leading-[20px]" htmlFor="prizeAmount">
+              <label
+                className="pb-2 font-medium leading-[20px]"
+                htmlFor="prizeAmount"
+              >
                 Prize Amount
               </label>
               <input
@@ -140,12 +200,15 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
                 placeholder="Prize Amount"
                 id="prizeAmount"
                 name="prizeAmount"
-                value={formState.prizeAmount}
+                value={hackathonData.prizeAmount}
                 onChange={handleChange}
               />
             </div>
             <div className="flex flex-col">
-              <label className="pb-2 font-medium leading-[20px]" htmlFor="participants">
+              <label
+                className="pb-2 font-medium leading-[20px]"
+                htmlFor="participants"
+              >
                 Participants
               </label>
               <input
@@ -154,12 +217,15 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
                 placeholder="Participants"
                 id="participants"
                 name="participants"
-                value={formState.participants || ""}
+                value={hackathonData.participants}
                 onChange={handleChange}
               />
             </div>
             <div className="flex flex-col">
-              <label className="pb-2 font-medium leading-[20px]" htmlFor="hostName">
+              <label
+                className="pb-2 font-medium leading-[20px]"
+                htmlFor="hostName"
+              >
                 Host Name
               </label>
               <input
@@ -168,12 +234,15 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
                 placeholder="Host Name"
                 id="hostName"
                 name="hostName"
-                value={formState.hostName}
+                value={hackathonData.hostName}
                 onChange={handleChange}
               />
             </div>
             <div className="flex flex-col">
-              <label className="pb-2 font-medium leading-[20px]" htmlFor="hostLogoUrl">
+              <label
+                className="pb-2 font-medium leading-[20px]"
+                htmlFor="hostLogoUrl"
+              >
                 Host Logo URL
               </label>
               <input
@@ -182,12 +251,15 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
                 placeholder="Host Logo URL"
                 id="hostLogoUrl"
                 name="hostLogoUrl"
-                value={formState.hostLogoUrl}
+                value={hackathonData.hostLogoUrl}
                 onChange={handleChange}
               />
             </div>
             <div className="flex flex-col">
-              <label className="pb-2 font-medium leading-[20px]" htmlFor="submissionPeriod">
+              <label
+                className="pb-2 font-medium leading-[20px]"
+                htmlFor="submissionPeriod"
+              >
                 Submission Period
               </label>
               <input
@@ -196,12 +268,15 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
                 placeholder="Submission Period"
                 id="submissionPeriod"
                 name="submissionPeriod"
-                value={formState.submissionPeriod}
+                value={hackathonData.submissionPeriod}
                 onChange={handleChange}
               />
             </div>
             <div className="flex flex-col">
-              <label className="pb-2 font-medium leading-[20px]" htmlFor="managedBy">
+              <label
+                className="pb-2 font-medium leading-[20px]"
+                htmlFor="managedBy"
+              >
                 Managed By
               </label>
               <input
@@ -210,12 +285,15 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
                 placeholder="Managed By"
                 id="managedBy"
                 name="managedBy"
-                value={formState.managedBy}
+                value={hackathonData.managedBy}
                 onChange={handleChange}
               />
             </div>
             <div className="flex flex-col">
-              <label className="pb-2 font-medium leading-[20px]" htmlFor="managedByLogoUrl">
+              <label
+                className="pb-2 font-medium leading-[20px]"
+                htmlFor="managedByLogoUrl"
+              >
                 Managed By Logo URL
               </label>
               <input
@@ -224,36 +302,41 @@ const CreateHackathonForm: React.FC<CreateHackathonFormProps> = ({ onSubmit, onC
                 placeholder="Managed By Logo URL"
                 id="managedByLogoUrl"
                 name="managedByLogoUrl"
-                value={formState.managedByLogoUrl}
+                value={hackathonData.managedByLogoUrl}
                 onChange={handleChange}
               />
             </div>
             <div className="flex flex-col">
-              <label className="pb-2 font-medium leading-[20px]" htmlFor="themes">
-                Themes (comma-separated)
+              <label
+                className="pb-2 font-medium leading-[20px]"
+                htmlFor="themes"
+              >
+                Themes
               </label>
-              <input
-                type="text"
-                className="box-border w-full rounded-[4px] border border-[#DEE2E6] bg-[#F8F9FA] p-2 text-sm leading-[20px] outline-none transition-all focus:border-[#495057] focus:bg-white dark:border-gray-700 dark:bg-gray-900 dark:focus:border-gray-500 dark:focus:bg-gray-700"
-                placeholder="Themes"
-                id="themes"
-                name="themes"
-                value={formState.themes.join(", ")}
-                onChange={(e) => setFormState((prevState) => ({ ...prevState, themes: e.target.value.split(", ").map(theme => theme.trim()) }))}
+              <CreatableSelect
+                isMulti
+                options={themesOptions}
+                value={hackathonData.themes.map((theme) => ({
+                  value: theme,
+                  label: theme,
+                }))}
+                onChange={handleThemesChange}
+                className="basic-multi-select"
+                classNamePrefix="select"
               />
             </div>
           </div>
           <div className="p-6">
             <button
               type="submit"
-              className="rounded bg-blue-500 py-2 px-4 text-white hover:bg-blue-600"
+              className="box-border rounded-[4px] bg-blue-600 px-4 py-2 text-sm leading-[20px] text-white hover:bg-blue-700"
             >
               Create Hackathon
             </button>
             <button
               type="button"
-              className="ml-4 rounded bg-gray-500 py-2 px-4 text-white hover:bg-gray-600"
               onClick={onClose}
+              className="ml-2 box-border rounded-[4px] bg-gray-600 px-4 py-2 text-sm leading-[20px] text-white hover:bg-gray-700"
             >
               Cancel
             </button>
