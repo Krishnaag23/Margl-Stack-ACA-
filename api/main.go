@@ -5,29 +5,27 @@ import (
 	"log"
 	"net/http"
 
-	"api/handler"
-
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 )
 
 // Init is the exported function that Vercel will call to start the server
-func Handler() {
-	handler.InitDatabase()
+func main() {
+	InitDatabase()
 
 	r := mux.NewRouter()
 
 	// Public routes
-	r.HandleFunc("/signup", handler.SignUp).Methods("POST")
-	r.HandleFunc("/signin", handler.SignIn).Methods("POST")
+	r.HandleFunc("/signup", SignUp).Methods("POST")
+	r.HandleFunc("/signin", SignIn).Methods("POST")
 
 	// Protected routes
 	api := r.PathPrefix("/auth").Subrouter()
-	api.Use(handler.AuthMiddleware)
-	api.HandleFunc("/projects", handler.CreateProject).Methods("POST")
-	api.HandleFunc("/projects", handler.GetProjects).Methods("GET")
-	api.HandleFunc("/hackathons", handler.CreateHackathon).Methods("POST")
-	api.HandleFunc("/hackathons", handler.GetHackathons).Methods("GET")
+	api.Use(AuthMiddleware)
+	api.HandleFunc("/projects", CreateProject).Methods("POST")
+	api.HandleFunc("/projects", GetProjects).Methods("GET")
+	api.HandleFunc("/hackathons", CreateHackathon).Methods("POST")
+	api.HandleFunc("/hackathons", GetHackathons).Methods("GET")
 
 	corsOptions := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
@@ -42,6 +40,4 @@ func Handler() {
 }
 
 // main is the entry point for local testing
-func main() {
-	Handler()
-}
+
