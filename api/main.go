@@ -12,7 +12,7 @@ import (
 )
 
 // Init is the exported function that Vercel will call to start the server
-func Init() {
+func Handler() {
 	handler.InitDatabase()
 
 	r := mux.NewRouter()
@@ -43,5 +43,5 @@ func Init() {
 
 // main is the entry point for local testing
 func main() {
-	Init()
+	Handler()
 }
