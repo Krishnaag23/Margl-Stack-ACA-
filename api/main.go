@@ -1,15 +1,18 @@
+// api/main.go
 package main
 
 import (
-	"api/handler"
 	"log"
 	"net/http"
+
+	"api/handler"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 )
 
-func main() {
+// Init is the exported function that Vercel will call to start the server
+func Init() {
 	handler.InitDatabase()
 
 	r := mux.NewRouter()
@@ -36,4 +39,9 @@ func main() {
 	handler := corsOptions.Handler(r)
 
 	log.Fatal(http.ListenAndServe(":8000", handler))
+}
+
+// main is the entry point for local testing
+func main() {
+	Init()
 }
