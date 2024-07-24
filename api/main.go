@@ -1,4 +1,4 @@
-package handler
+package main
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 	"github.com/rs/cors"
 )
 
-func handler() {
+func main() {
 	InitDatabase()
 
 	r := mux.NewRouter()
