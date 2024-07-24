@@ -5,9 +5,10 @@ import axios from "axios";
 import HackathonCard from "@/components/Hackathon/HackathonCard";
 import CreateHackathonForm from "@/components/Hackathon/CreateHackathonForm";
 import { HackathonData } from "@/types/hackathonData";
+import { fetchedHackathonData } from "@/types/fetchedHackathonData";
 
 const HackathonsPage: React.FC = () => {
-  const [hackathons, setHackathons] = useState<HackathonData[]>([]);
+  const [hackathons, setHackathons] = useState<fetchedHackathonData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +57,7 @@ const HackathonsPage: React.FC = () => {
 
   const filteredHackathons = hackathons.filter((hackathon) => {
     const title = hackathon.title?.toLowerCase();
-    const hostName = hackathon.hostName?.toLowerCase();
+    const hostName = hackathon.host_name?.toLowerCase();
     const themes = Array.isArray(hackathon.themes) ? hackathon.themes : [];
 
     const titleMatch = title?.includes(searchQuery.toLowerCase());

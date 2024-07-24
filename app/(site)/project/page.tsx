@@ -1,37 +1,37 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import ProjectCard from '@/components/Project/ProjectCard';
-import { ProjectData } from '@/types/projectData';
-import CreateProjectForm from '@/components/Project/CreateProjectForm';
+import React, { useState, useEffect } from "react";
+import ProjectCard from "@/components/Project/ProjectCard";
+import { ProjectData } from "@/types/projectData";
+import CreateProjectForm from "@/components/Project/CreateProjectForm";
 
 const CreateProjectPage: React.FC = () => {
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const fetchProjects = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
-        console.error('No token found');
+        console.error("No token found");
         return;
       }
 
-      const response = await fetch('http://localhost:8000/auth/projects', {
-        method: 'GET',
+      const response = await fetch("http://localhost:8000/auth/projects", {
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch projects');
+        throw new Error("Failed to fetch projects");
       }
 
       const data: ProjectData[] = await response.json();
-      console.log('Fetched projects:', data); // Log fetched data for debugging
+      console.log("Fetched projects:", data); // Log fetched data for debugging
       setProjects(data);
     } catch (err) {
       setError((err as Error).message);
@@ -57,12 +57,25 @@ const CreateProjectPage: React.FC = () => {
 
   const filteredProjects = projects.filter((project) => {
     console.log("Filtering project:", project);
-    const nameMatch = project.Name?.toLowerCase().includes(searchQuery.toLowerCase());
-    const descriptionMatch = project.Description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const rolesMatch = JSON.parse(project.Roles)?.some((role: string) =>
+
+    // Ensure Roles and Tags are arrays
+    const roles = Array.isArray(project.Roles)
+      ? project.Roles
+      : JSON.parse(project.Roles || "[]");
+    const tags = Array.isArray(project.Tags)
+      ? project.Tags
+      : JSON.parse(project.Tags || "[]");
+
+    const nameMatch = project.Name?.toLowerCase().includes(
+      searchQuery.toLowerCase(),
+    );
+    const descriptionMatch = project.Description?.toLowerCase().includes(
+      searchQuery.toLowerCase(),
+    );
+    const rolesMatch = roles.some((role) =>
       role.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-    const tagsMatch = JSON.parse(project.Tags)?.some((tag: string) => 
+    const tagsMatch = tags.some((tag) =>
       tag.toLowerCase().includes(searchQuery.toLowerCase()),
     );
 
@@ -71,13 +84,13 @@ const CreateProjectPage: React.FC = () => {
       descriptionMatch,
       rolesMatch,
       tagsMatch,
-      searchQuery
+      searchQuery,
     });
 
     return nameMatch || descriptionMatch || rolesMatch || tagsMatch;
   });
 
-  console.log('Filtered projects:', filteredProjects); // Log filtered projects for debugging
+  console.log("Filtered projects:", filteredProjects); // Log filtered projects for debugging
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -110,11 +123,19 @@ const CreateProjectPage: React.FC = () => {
             filteredProjects.map((project, index) => (
               <ProjectCard
                 key={index}
-                title={project.Name || 'No Title'}
-                description={project.Description || 'No Description'}
-                skills={JSON.parse(project.Roles)?.join(', ') || 'No Skills'}
+                title={project.Name || "No Title"}
+                description={project.Description || "No Description"}
+                skills={
+                  Array.isArray(project.Roles)
+                    ? project.Roles
+                    : JSON.parse(project.Roles || "[]")
+                }
                 timestamp="a few seconds ago"
-                tags={JSON.parse(project.Tags) || []}
+                tags={
+                  Array.isArray(project.Tags)
+                    ? project.Tags
+                    : JSON.parse(project.Tags || "[]")
+                }
               />
             ))
           )}
